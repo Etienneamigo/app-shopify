@@ -1,16 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
-// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
-// enough when changing adapters.
-// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
 datasource db {
-  provider = "sqlite"
-  url      = "file:dev.sqlite"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Session {
@@ -31,4 +25,97 @@ model Session {
   emailVerified Boolean?  @default(false)
   refreshToken        String?
   refreshTokenExpires DateTime?
+}
+
+model Customer {
+  id              String   @id // Shopify customer GID
+  shopDomain      String
+  email           String
+  firstName       String?
+  lastName        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  reviews         Review[]
+  orders          Order[]
+
+  @@unique([email, shopDomain])
+  @@index([shopDomain])
+}
+
+model Product {
+  id              String   @id // Shopify product GID
+  shopDomain      String
+  title           String
+  handle          String
+  imageUrl        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  reviews         Review[]
+  orderItems      OrderItem[]
+
+  @@unique([handle, shopDomain])
+  @@index([shopDomain])
+}
+
+model Order {
+  id              String      @id // Shopify order GID
+  shopDomain      String
+  orderNumber     Int
+  customerId      String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  customer        Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  items           OrderItem[]
+
+  @@index([customerId])
+  @@index([shopDomain])
+}
+
+model OrderItem {
+  id              String   @id @default(cuid())
+  orderId         String
+  productId       String
+  quantity        Int      @default(1)
+  createdAt       DateTime @default(now())
+
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, productId])
+  @@index([productId])
+}
+
+model Review {
+  id              String       @id @default(cuid())
+  shopDomain      String
+  productId       String
+  customerId      String?
+  rating          Int          // 1-5
+  title           String?
+  body            String
+  authorName      String
+  authorEmail     String
+  status          ReviewStatus @default(PENDING)
+  verifiedPurchase Boolean     @default(false)
+  pinned          Boolean      @default(false)
+  isAdmin         Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  product         Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customer        Customer?    @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@unique([customerId, productId])
+  @@index([productId, status])
+  @@index([shopDomain, status])
+  @@index([shopDomain, pinned])
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
