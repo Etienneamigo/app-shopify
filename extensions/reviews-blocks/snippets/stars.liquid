@@ -1,10 +1,7 @@
-{{ 'ratings.stars.label' | t }}:
-
 {%- for i in (1..rating) -%}
-  ★
+  <span style="color: #f59e0b;">&#9733;</span>
 {%- endfor -%}
 {%- assign blank_stars = 5 | minus: rating -%}
 {%- for i in (1..blank_stars) -%}
-  ☆
+  <span style="color: #ddd;">&#9733;</span>
 {%- endfor -%}
-

@@ -1,0 +1,264 @@
+{% assign app_proxy_url = shop.url | append: '/apps/reviews' %}
+
+<div id="reviews-carousel-{{ block.id }}" class="reviews-carousel-container">
+  <div class="reviews-carousel-header">
+    <h2 class="reviews-carousel-title">{{ block.settings.title | default: 'What Our Customers Say' }}</h2>
+    {% if block.settings.subtitle %}
+      <p class="reviews-carousel-subtitle">{{ block.settings.subtitle }}</p>
+    {% endif %}
+  </div>
+
+  <div class="reviews-carousel-loading" id="carousel-loading-{{ block.id }}">
+    <p>Loading reviews...</p>
+  </div>
+
+  <div class="reviews-marquee-wrapper" id="marquee-wrapper-{{ block.id }}" style="display:none;">
+    <div class="reviews-marquee-track" id="marquee-track-{{ block.id }}">
+      <!-- Reviews will be injected here, duplicated for infinite scroll -->
+    </div>
+  </div>
+</div>
+
+<style>
+  .reviews-carousel-container {
+    padding: {{ block.settings.padding_top | default: 40 }}px 0 {{ block.settings.padding_bottom | default: 40 }}px;
+    overflow: hidden;
+  }
+  .reviews-carousel-header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding: 0 20px;
+  }
+  .reviews-carousel-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 8px;
+  }
+  .reviews-carousel-subtitle {
+    color: #666;
+    font-size: 16px;
+    margin: 0;
+  }
+  .reviews-carousel-loading {
+    text-align: center;
+    color: #888;
+    padding: 40px;
+  }
+
+  .reviews-marquee-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+  }
+
+  .reviews-marquee-track {
+    display: flex;
+    gap: 20px;
+    width: max-content;
+    animation: marquee-scroll {{ block.settings.speed | default: 40 }}s linear infinite;
+  }
+
+  .reviews-marquee-track:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes marquee-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .carousel-review-card {
+    flex-shrink: 0;
+    width: 320px;
+    background: {{ block.settings.card_background | default: '#ffffff' }};
+    border: 1px solid #e5e5e5;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .carousel-review-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+
+  .carousel-card-stars {
+    color: #f59e0b;
+    font-size: 18px;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .carousel-card-body {
+    color: #444;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .carousel-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #eee;
+    padding-top: 12px;
+  }
+  .carousel-card-author {
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .carousel-card-product {
+    font-size: 12px;
+    color: #888;
+    margin-top: 2px;
+  }
+  .carousel-card-verified {
+    font-size: 11px;
+    font-weight: 600;
+    color: #1565c0;
+    background: #e3f2fd;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+</style>
+
+<script>
+(function() {
+  var blockId = '{{ block.id }}';
+  var appProxyUrl = '{{ app_proxy_url }}';
+  var limit = {{ block.settings.max_reviews | default: 20 }};
+
+  function renderStars(rating) {
+    var full = Math.round(rating);
+    var stars = '';
+    for (var i = 0; i < 5; i++) {
+      stars += i < full ? '\u2605' : '\u2606';
+    }
+    return stars;
+  }
+
+  function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  fetch(appProxyUrl + '/homepage?limit=' + limit)
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      var loading = document.getElementById('carousel-loading-' + blockId);
+      var wrapper = document.getElementById('marquee-wrapper-' + blockId);
+      var track = document.getElementById('marquee-track-' + blockId);
+
+      loading.style.display = 'none';
+
+      if (!data.reviews || data.reviews.length === 0) {
+        loading.innerHTML = '<p>No reviews to display yet.</p>';
+        loading.style.display = 'block';
+        return;
+      }
+
+      wrapper.style.display = 'block';
+
+      // Build review cards HTML
+      var cardsHtml = '';
+      data.reviews.forEach(function(review) {
+        cardsHtml += '<div class="carousel-review-card">';
+        cardsHtml += '<div class="carousel-card-stars">' + renderStars(review.rating) + '</div>';
+        if (review.title) {
+          cardsHtml += '<div style="font-weight:600;font-size:15px;margin-bottom:8px;">' + escapeHtml(review.title) + '</div>';
+        }
+        cardsHtml += '<div class="carousel-card-body">' + escapeHtml(review.body) + '</div>';
+        cardsHtml += '<div class="carousel-card-footer">';
+        cardsHtml += '<div>';
+        cardsHtml += '<div class="carousel-card-author">' + escapeHtml(review.authorName) + '</div>';
+        if (review.product && review.product.title) {
+          cardsHtml += '<div class="carousel-card-product">' + escapeHtml(review.product.title) + '</div>';
+        }
+        cardsHtml += '</div>';
+        if (review.verifiedPurchase) {
+          cardsHtml += '<span class="carousel-card-verified">Verified</span>';
+        }
+        cardsHtml += '</div>';
+        cardsHtml += '</div>';
+      });
+
+      // Duplicate for infinite scroll effect
+      track.innerHTML = cardsHtml + cardsHtml;
+    })
+    .catch(function(err) {
+      console.error('Error loading carousel reviews:', err);
+      var loading = document.getElementById('carousel-loading-' + blockId);
+      loading.innerHTML = '<p>Unable to load reviews.</p>';
+    });
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Reviews Carousel",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "What Our Customers Say"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Real reviews from real customers"
+    },
+    {
+      "type": "range",
+      "id": "max_reviews",
+      "label": "Max reviews to display",
+      "min": 5,
+      "max": 50,
+      "step": 5,
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "speed",
+      "label": "Scroll speed (seconds for full loop)",
+      "min": 20,
+      "max": 120,
+      "step": 5,
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "default": 40,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "default": 40,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card background color",
+      "default": "#ffffff"
+    }
+  ]
+}
+{% endschema %}

@@ -6,5 +6,13 @@
     "home": {
       "recommendationText": "Recommended Product!"
     }
+  },
+  "reviews": {
+    "title": "Customer Reviews",
+    "write_review": "Write a Review",
+    "submit": "Submit Review",
+    "verified_purchase": "Verified Purchase",
+    "no_reviews": "No reviews yet. Be the first to review this product!",
+    "carousel_title": "What Our Customers Say"
   }
 }
