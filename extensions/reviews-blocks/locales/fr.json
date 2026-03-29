@@ -1,0 +1,35 @@
+{
+  "ratings": {
+    "stars": {
+      "label": "Note"
+    },
+    "home": {
+      "recommendationText": "Produit recommandé !"
+    }
+  },
+  "reviews": {
+    "title": "Avis clients",
+    "empty": "Aucun avis pour le moment",
+    "count_one": "{{ count }} avis",
+    "count_other": "{{ count }} avis",
+    "pinned": "Épinglé",
+    "verified": "Achat vérifié",
+    "add_title": "Laisser un avis",
+    "login_prompt": "Connectez-vous pour laisser un avis.",
+    "not_purchased": "L'ajout d'avis est réservé aux clients ayant commandé ce produit.",
+    "form": {
+      "rating_label": "Note",
+      "title_label": "Titre (optionnel)",
+      "title_placeholder": "Résumez votre expérience",
+      "body_label": "Votre avis",
+      "body_placeholder": "Partagez votre expérience avec ce produit…",
+      "submit": "Envoyer mon avis",
+      "note": "Votre avis sera vérifié avant publication."
+    },
+    "homepage": {
+      "subtitle": "Témoignages",
+      "title": "Ce que disent nos clientes",
+      "empty": "Les témoignages seront bientôt disponibles."
+    }
+  }
+}

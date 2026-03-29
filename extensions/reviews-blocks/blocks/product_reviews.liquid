@@ -1,0 +1,541 @@
+{%- comment -%}
+  Product Reviews Block
+  Displays reviews for the current product, average rating,
+  and a conditional review submission form.
+{%- endcomment -%}
+
+{%- assign current_product = product | default: block.settings.product -%}
+
+<style>
+  .apee-reviews {
+    padding: 40px 0;
+    font-family: inherit;
+    color: #1A1A1A;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .apee-reviews__header {
+    text-align: center;
+    margin-bottom: 36px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid #E8E0D4;
+  }
+
+  .apee-reviews__title {
+    font-size: 28px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0 0 16px;
+    color: #1A1A1A;
+  }
+
+  .apee-reviews__summary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .apee-reviews__average-number {
+    font-size: 36px;
+    font-weight: 300;
+    color: #1A1A1A;
+    line-height: 1;
+  }
+
+  .apee-reviews__average-detail {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .apee-reviews__count {
+    font-size: 13px;
+    color: #888;
+    letter-spacing: 0.03em;
+  }
+
+  .apee-reviews__empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+    font-size: 15px;
+    font-style: italic;
+  }
+
+  .apee-reviews__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* Review Card Styles */
+  .apee-review-card {
+    padding: 28px 0;
+    border-bottom: 1px solid #F0EBE3;
+    position: relative;
+  }
+
+  .apee-review-card:last-child {
+    border-bottom: none;
+  }
+
+  .apee-review-card--pinned {
+    background: linear-gradient(135deg, #FDFBF7 0%, #FFF9F0 100%);
+    padding: 28px 24px;
+    margin: 0 -24px;
+    border-radius: 8px;
+    border-bottom: none;
+    margin-bottom: 8px;
+  }
+
+  .apee-review-card__pin {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #C5A467;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  .apee-review-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .apee-review-card__meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .apee-review-card__author {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1A1A1A;
+    letter-spacing: 0.02em;
+  }
+
+  .apee-review-card__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #C5A467;
+    background: #FAF6EF;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid #EDE5D6;
+  }
+
+  .apee-review-card__rating {
+    flex-shrink: 0;
+  }
+
+  .apee-review-card__title {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    color: #1A1A1A;
+  }
+
+  .apee-review-card__body {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #555;
+    margin: 0;
+  }
+
+  .apee-review-card__footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .apee-review-card__date {
+    font-size: 12px;
+    color: #AAA;
+    letter-spacing: 0.02em;
+  }
+
+  .apee-review-card__product {
+    font-size: 12px;
+    color: #C5A467;
+    font-style: italic;
+  }
+
+  /* Add Review Section */
+  .apee-reviews__add {
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 1px solid #E8E0D4;
+  }
+
+  .apee-reviews__add-title {
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 20px;
+    text-align: center;
+    color: #1A1A1A;
+  }
+
+  .apee-reviews__message {
+    text-align: center;
+    padding: 24px;
+    font-size: 14px;
+    color: #888;
+    background: #FAFAFA;
+    border-radius: 8px;
+    border: 1px solid #F0EBE3;
+  }
+
+  .apee-reviews__message a {
+    color: #C5A467;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .apee-reviews__message a:hover {
+    color: #A8893D;
+  }
+
+  /* Form Styles */
+  .apee-review-form {
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .apee-review-form__group {
+    margin-bottom: 20px;
+  }
+
+  .apee-review-form__label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #666;
+    margin-bottom: 8px;
+  }
+
+  .apee-review-form__input,
+  .apee-review-form__textarea {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #1A1A1A;
+    background: #FAFAFA;
+    border: 1px solid #E8E0D4;
+    border-radius: 6px;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  .apee-review-form__input:focus,
+  .apee-review-form__textarea:focus {
+    outline: none;
+    border-color: #C5A467;
+    background: #FFF;
+  }
+
+  .apee-review-form__textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  /* Star Rating Input */
+  .apee-star-input {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .apee-star-input input {
+    display: none;
+  }
+
+  .apee-star-input label {
+    cursor: pointer;
+    font-size: 28px;
+    color: #E0D6C8;
+    transition: color 0.15s ease;
+    line-height: 1;
+  }
+
+  .apee-star-input label:hover,
+  .apee-star-input label:hover ~ label,
+  .apee-star-input input:checked ~ label {
+    color: #C5A467;
+  }
+
+  .apee-review-form__submit {
+    display: block;
+    width: 100%;
+    padding: 14px 32px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #FFF;
+    background: #1A1A1A;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 8px;
+  }
+
+  .apee-review-form__submit:hover {
+    background: #333;
+  }
+
+  .apee-review-form__note {
+    text-align: center;
+    font-size: 12px;
+    color: #AAA;
+    margin-top: 12px;
+  }
+
+  .apee-review-form__success {
+    text-align: center;
+    padding: 24px;
+    background: #F6FBF6;
+    border: 1px solid #D4E8D4;
+    border-radius: 8px;
+    color: #3A7A3A;
+    font-size: 14px;
+  }
+
+  @media (max-width: 640px) {
+    .apee-reviews {
+      padding: 28px 0;
+    }
+    .apee-reviews__title {
+      font-size: 22px;
+    }
+    .apee-reviews__average-number {
+      font-size: 28px;
+    }
+    .apee-review-card--pinned {
+      margin: 0 -12px;
+      padding: 20px 16px;
+    }
+    .apee-review-card__header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+
+{% if current_product == blank %}
+  <div class="apee-reviews">
+    <p class="apee-reviews__empty">Aucun produit détecté. Ajoutez ce bloc à une page produit ou sélectionnez un produit dans les paramètres.</p>
+  </div>
+{% else %}
+
+  {%- comment -%} ===== PASS 1: Calculate stats ===== {%- endcomment -%}
+  {%- assign review_count = 0 -%}
+  {%- assign rating_sum = 0 -%}
+  {%- assign pinned_count = 0 -%}
+
+  {%- for entry in shop.metaobjects.review.values -%}
+    {%- assign ref_product = entry.product_reference.value -%}
+    {%- if ref_product.id == current_product.id and entry.status.value == 'approved' -%}
+      {%- assign review_count = review_count | plus: 1 -%}
+      {%- assign entry_rating = entry.rating.value | plus: 0 -%}
+      {%- assign rating_sum = rating_sum | plus: entry_rating -%}
+      {%- if entry.pinned.value == true -%}
+        {%- assign pinned_count = pinned_count | plus: 1 -%}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endfor -%}
+
+  {%- if review_count > 0 -%}
+    {%- assign avg_x10 = rating_sum | times: 10 | divided_by: review_count -%}
+    {%- assign avg_whole = avg_x10 | divided_by: 10 -%}
+    {%- assign avg_decimal = avg_x10 | modulo: 10 -%}
+    {%- assign avg_rounded = avg_x10 | plus: 5 | divided_by: 10 -%}
+  {%- endif -%}
+
+  <div class="apee-reviews" id="apee-reviews">
+
+    {%- comment -%} ===== HEADER ===== {%- endcomment -%}
+    <div class="apee-reviews__header">
+      <h2 class="apee-reviews__title">{{ block.settings.section_title | default: 'Avis clients' }}</h2>
+
+      {%- if review_count > 0 -%}
+        <div class="apee-reviews__summary">
+          <span class="apee-reviews__average-number">{{ avg_whole }}.{{ avg_decimal }}</span>
+          <div class="apee-reviews__average-detail">
+            {%- render 'stars', rating: avg_rounded, size: 'medium' -%}
+            <span class="apee-reviews__count">
+              {{ review_count }} avis
+            </span>
+          </div>
+        </div>
+      {%- else -%}
+        <p class="apee-reviews__count" style="margin: 0;">Aucun avis pour le moment</p>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} ===== REVIEWS LIST ===== {%- endcomment -%}
+    {%- if review_count > 0 -%}
+      <div class="apee-reviews__list">
+
+        {%- comment -%} Pinned reviews first {%- endcomment -%}
+        {%- for entry in shop.metaobjects.review.values -%}
+          {%- assign ref_product = entry.product_reference.value -%}
+          {%- if ref_product.id == current_product.id and entry.status.value == 'approved' and entry.pinned.value == true -%}
+            {%- render 'review-card', review: entry, show_product: false, compact: false -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+        {%- comment -%} Non-pinned reviews {%- endcomment -%}
+        {%- for entry in shop.metaobjects.review.values -%}
+          {%- assign ref_product = entry.product_reference.value -%}
+          {%- if ref_product.id == current_product.id and entry.status.value == 'approved' and entry.pinned.value != true -%}
+            {%- render 'review-card', review: entry, show_product: false, compact: false -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} ===== ADD REVIEW SECTION ===== {%- endcomment -%}
+    <div class="apee-reviews__add">
+      <h3 class="apee-reviews__add-title">Laisser un avis</h3>
+
+      {%- if customer == blank -%}
+        {%- comment -%} Not logged in {%- endcomment -%}
+        <div class="apee-reviews__message">
+          <p style="margin: 0;">
+            <a href="/account/login">Connectez-vous</a> pour laisser un avis sur ce produit.
+          </p>
+        </div>
+
+      {%- else -%}
+        {%- comment -%} Check if customer has purchased this product {%- endcomment -%}
+        {%- assign has_purchased = false -%}
+        {%- for order in customer.orders -%}
+          {%- if has_purchased -%}{%- break -%}{%- endif -%}
+          {%- for line_item in order.line_items -%}
+            {%- if line_item.product_id == current_product.id -%}
+              {%- assign has_purchased = true -%}
+              {%- break -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endfor -%}
+
+        {%- if has_purchased -%}
+          {%- comment -%} Show review form {%- endcomment -%}
+          <form method="post" action="/contact#apee-review-form" class="apee-review-form" id="apee-review-form" accept-charset="UTF-8">
+            <input type="hidden" name="form_type" value="contact">
+            <input type="hidden" name="utf8" value="✓">
+            <input type="hidden" name="contact[email]" value="{{ customer.email }}">
+            <input type="hidden" name="contact[subject]" value="[AVIS] {{ current_product.title }} — {{ customer.name }}">
+            <input type="hidden" name="contact[product_title]" value="{{ current_product.title }}">
+            <input type="hidden" name="contact[product_handle]" value="{{ current_product.handle }}">
+            <input type="hidden" name="contact[customer_name]" value="{{ customer.name }}">
+
+            <div class="apee-review-form__group">
+              <label class="apee-review-form__label">Note</label>
+              <div class="apee-star-input">
+                <input type="radio" name="contact[rating]" value="5" id="apee-star5" required>
+                <label for="apee-star5" aria-label="5 étoiles">★</label>
+                <input type="radio" name="contact[rating]" value="4" id="apee-star4">
+                <label for="apee-star4" aria-label="4 étoiles">★</label>
+                <input type="radio" name="contact[rating]" value="3" id="apee-star3">
+                <label for="apee-star3" aria-label="3 étoiles">★</label>
+                <input type="radio" name="contact[rating]" value="2" id="apee-star2">
+                <label for="apee-star2" aria-label="2 étoiles">★</label>
+                <input type="radio" name="contact[rating]" value="1" id="apee-star1">
+                <label for="apee-star1" aria-label="1 étoile">★</label>
+              </div>
+            </div>
+
+            <div class="apee-review-form__group">
+              <label class="apee-review-form__label" for="apee-review-title">Titre (optionnel)</label>
+              <input
+                type="text"
+                id="apee-review-title"
+                name="contact[review_title]"
+                class="apee-review-form__input"
+                placeholder="Résumez votre expérience"
+                maxlength="100"
+              >
+            </div>
+
+            <div class="apee-review-form__group">
+              <label class="apee-review-form__label" for="apee-review-body">Votre avis</label>
+              <textarea
+                id="apee-review-body"
+                name="contact[body]"
+                class="apee-review-form__textarea"
+                placeholder="Partagez votre expérience avec ce produit…"
+                required
+                minlength="10"
+              ></textarea>
+            </div>
+
+            <button type="submit" class="apee-review-form__submit">Envoyer mon avis</button>
+            <p class="apee-review-form__note">Votre avis sera vérifié avant publication.</p>
+          </form>
+        {%- else -%}
+          {%- comment -%} Logged in but hasn't purchased {%- endcomment -%}
+          <div class="apee-reviews__message">
+            <p style="margin: 0;">
+              L'ajout d'avis est réservé aux clients ayant commandé ce produit.
+            </p>
+          </div>
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+
+  </div>
+
+{% endif %}
+
+{% schema %}
+{
+  "name": "Avis Produit",
+  "target": "section",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Produit",
+      "info": "Laissez vide sur une page produit pour détecter automatiquement.",
+      "autofill": true
+    },
+    {
+      "type": "text",
+      "id": "section_title",
+      "label": "Titre de la section",
+      "default": "Avis clients"
+    }
+  ]
+}
+{% endschema %}

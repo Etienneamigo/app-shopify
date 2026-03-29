@@ -1,0 +1,305 @@
+{%- comment -%}
+  Homepage Reviews Carousel
+  Displays approved reviews marked as homepage_visible in a continuous marquee.
+{%- endcomment -%}
+
+<style>
+  .apee-home-reviews {
+    padding: 60px 0;
+    overflow: hidden;
+    position: relative;
+    background: {{ block.settings.bg_color | default: '#FDFBF7' }};
+  }
+
+  .apee-home-reviews__header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 0 24px;
+  }
+
+  .apee-home-reviews__subtitle {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: #C5A467;
+    margin: 0 0 8px;
+  }
+
+  .apee-home-reviews__title {
+    font-size: 32px;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: #1A1A1A;
+    margin: 0;
+  }
+
+  .apee-home-reviews__track-wrapper {
+    position: relative;
+  }
+
+  .apee-home-reviews__track-wrapper::before,
+  .apee-home-reviews__track-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .apee-home-reviews__track-wrapper::before {
+    left: 0;
+    background: linear-gradient(to right, {{ block.settings.bg_color | default: '#FDFBF7' }}, transparent);
+  }
+
+  .apee-home-reviews__track-wrapper::after {
+    right: 0;
+    background: linear-gradient(to left, {{ block.settings.bg_color | default: '#FDFBF7' }}, transparent);
+  }
+
+  .apee-home-reviews__track {
+    display: flex;
+    gap: 24px;
+    animation: apeeMarquee var(--apee-marquee-duration, 40s) linear infinite;
+    width: max-content;
+  }
+
+  .apee-home-reviews__track:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes apeeMarquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .apee-home-card {
+    flex-shrink: 0;
+    width: 340px;
+    padding: 32px;
+    background: #FFFFFF;
+    border-radius: 12px;
+    border: 1px solid #F0EBE3;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+
+  .apee-home-card:hover {
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .apee-home-card__stars {
+    margin-bottom: 16px;
+  }
+
+  .apee-home-card__body {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #555;
+    margin: 0 0 20px;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .apee-home-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .apee-home-card__author-block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .apee-home-card__author {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1A1A1A;
+    letter-spacing: 0.02em;
+  }
+
+  .apee-home-card__product {
+    font-size: 12px;
+    color: #C5A467;
+    font-style: italic;
+  }
+
+  .apee-home-card__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #C5A467;
+    background: #FAF6EF;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid #EDE5D6;
+    white-space: nowrap;
+  }
+
+  .apee-home-reviews__empty {
+    text-align: center;
+    padding: 40px 24px;
+    color: #999;
+    font-size: 14px;
+  }
+
+  @media (max-width: 640px) {
+    .apee-home-reviews {
+      padding: 40px 0;
+    }
+    .apee-home-reviews__title {
+      font-size: 24px;
+    }
+    .apee-home-card {
+      width: 280px;
+      padding: 24px;
+    }
+    .apee-home-reviews__track {
+      gap: 16px;
+    }
+    .apee-home-reviews__track-wrapper::before,
+    .apee-home-reviews__track-wrapper::after {
+      width: 40px;
+    }
+  }
+</style>
+
+{%- comment -%} Collect homepage-visible approved reviews {%- endcomment -%}
+{%- assign home_review_count = 0 -%}
+{%- for entry in shop.metaobjects.review.values -%}
+  {%- if entry.status.value == 'approved' and entry.homepage_visible.value == true -%}
+    {%- assign home_review_count = home_review_count | plus: 1 -%}
+  {%- endif -%}
+{%- endfor -%}
+
+<div class="apee-home-reviews">
+  <div class="apee-home-reviews__header">
+    {%- if block.settings.subtitle != blank -%}
+      <p class="apee-home-reviews__subtitle">{{ block.settings.subtitle }}</p>
+    {%- endif -%}
+    <h2 class="apee-home-reviews__title">{{ block.settings.title | default: 'Ce que disent nos clientes' }}</h2>
+  </div>
+
+  {%- if home_review_count > 0 -%}
+    <div class="apee-home-reviews__track-wrapper">
+      <div class="apee-home-reviews__track" style="--apee-marquee-duration: {{ block.settings.speed | default: 40 }}s;">
+
+        {%- comment -%} First set of cards {%- endcomment -%}
+        {%- for entry in shop.metaobjects.review.values -%}
+          {%- if entry.status.value == 'approved' and entry.homepage_visible.value == true -%}
+            {%- assign r_product = entry.product_reference.value -%}
+            <div class="apee-home-card">
+              <div class="apee-home-card__stars">
+                {%- render 'stars', rating: entry.rating.value, size: 'small' -%}
+              </div>
+              {%- if entry.title.value != blank -%}
+                <p style="font-weight: 600; font-size: 14px; margin: 0 0 8px; color: #1A1A1A;">{{ entry.title.value }}</p>
+              {%- endif -%}
+              <p class="apee-home-card__body">{{ entry.body.value }}</p>
+              <div class="apee-home-card__footer">
+                <div class="apee-home-card__author-block">
+                  <span class="apee-home-card__author">{{ entry.author_name.value }}</span>
+                  {%- if r_product -%}
+                    <span class="apee-home-card__product">{{ r_product.title }}</span>
+                  {%- endif -%}
+                </div>
+                {%- if entry.verified_badge.value == true -%}
+                  <span class="apee-home-card__badge">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                    Vérifié
+                  </span>
+                {%- endif -%}
+              </div>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+
+        {%- comment -%} Duplicate set for seamless loop {%- endcomment -%}
+        {%- for entry in shop.metaobjects.review.values -%}
+          {%- if entry.status.value == 'approved' and entry.homepage_visible.value == true -%}
+            {%- assign r_product = entry.product_reference.value -%}
+            <div class="apee-home-card">
+              <div class="apee-home-card__stars">
+                {%- render 'stars', rating: entry.rating.value, size: 'small' -%}
+              </div>
+              {%- if entry.title.value != blank -%}
+                <p style="font-weight: 600; font-size: 14px; margin: 0 0 8px; color: #1A1A1A;">{{ entry.title.value }}</p>
+              {%- endif -%}
+              <p class="apee-home-card__body">{{ entry.body.value }}</p>
+              <div class="apee-home-card__footer">
+                <div class="apee-home-card__author-block">
+                  <span class="apee-home-card__author">{{ entry.author_name.value }}</span>
+                  {%- if r_product -%}
+                    <span class="apee-home-card__product">{{ r_product.title }}</span>
+                  {%- endif -%}
+                </div>
+                {%- if entry.verified_badge.value == true -%}
+                  <span class="apee-home-card__badge">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                    Vérifié
+                  </span>
+                {%- endif -%}
+              </div>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+
+      </div>
+    </div>
+  {%- else -%}
+    <p class="apee-home-reviews__empty">Les témoignages seront bientôt disponibles.</p>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Avis Homepage",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Sous-titre",
+      "default": "Témoignages"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Titre",
+      "default": "Ce que disent nos clientes"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Couleur de fond",
+      "default": "#FDFBF7"
+    },
+    {
+      "type": "range",
+      "id": "speed",
+      "label": "Vitesse du défilement (secondes)",
+      "min": 20,
+      "max": 80,
+      "step": 5,
+      "default": 40,
+      "unit": "s"
+    }
+  ]
+}
+{% endschema %}

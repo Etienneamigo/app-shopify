@@ -1,10 +1,35 @@
 {
   "ratings": {
     "stars": {
-      "label": "Ratings"
+      "label": "Rating"
     },
     "home": {
       "recommendationText": "Recommended Product!"
+    }
+  },
+  "reviews": {
+    "title": "Customer Reviews",
+    "empty": "No reviews yet",
+    "count_one": "{{ count }} review",
+    "count_other": "{{ count }} reviews",
+    "pinned": "Pinned",
+    "verified": "Verified purchase",
+    "add_title": "Leave a review",
+    "login_prompt": "Log in to leave a review.",
+    "not_purchased": "Reviews are reserved for customers who purchased this product.",
+    "form": {
+      "rating_label": "Rating",
+      "title_label": "Title (optional)",
+      "title_placeholder": "Summarize your experience",
+      "body_label": "Your review",
+      "body_placeholder": "Share your experience with this product…",
+      "submit": "Submit my review",
+      "note": "Your review will be verified before publication."
+    },
+    "homepage": {
+      "subtitle": "Testimonials",
+      "title": "What our customers say",
+      "empty": "Testimonials will be available soon."
     }
   }
 }

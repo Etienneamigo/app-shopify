@@ -1,10 +1,32 @@
-{{ 'ratings.stars.label' | t }}:
+{%- comment -%}
+  Renders star rating display.
+  Usage: {% render 'stars', rating: 4, size: 'small' %}
+  Accepts:
+    - rating: number (1-5)
+    - size: string ('small', 'medium', 'large') — default 'medium'
+    - color: string (hex color) — default '#C5A467'
+{%- endcomment -%}
 
-{%- for i in (1..rating) -%}
-  ★
-{%- endfor -%}
-{%- assign blank_stars = 5 | minus: rating -%}
-{%- for i in (1..blank_stars) -%}
-  ☆
-{%- endfor -%}
+{%- assign star_size = size | default: 'medium' -%}
+{%- assign star_color = color | default: '#C5A467' -%}
 
+{%- case star_size -%}
+  {%- when 'small' -%}
+    {%- assign font_size = '14px' -%}
+  {%- when 'large' -%}
+    {%- assign font_size = '24px' -%}
+  {%- else -%}
+    {%- assign font_size = '18px' -%}
+{%- endcase -%}
+
+{%- assign rating_int = rating | round -%}
+
+<span class="apee-stars" style="font-size: {{ font_size }}; letter-spacing: 2px; color: {{ star_color }}; display: inline-flex; line-height: 1;" aria-label="{{ rating }} sur 5 étoiles">
+  {%- for i in (1..5) -%}
+    {%- if i <= rating_int -%}
+      <span style="color: {{ star_color }};">★</span>
+    {%- else -%}
+      <span style="color: #E0D6C8;">★</span>
+    {%- endif -%}
+  {%- endfor -%}
+</span>

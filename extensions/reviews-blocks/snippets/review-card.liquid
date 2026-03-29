@@ -1,0 +1,65 @@
+{%- comment -%}
+  Renders a single review card.
+  Usage: {% render 'review-card', review: review, show_product: false %}
+  Accepts:
+    - review: metaobject entry
+    - show_product: boolean — show product name (for homepage)
+    - compact: boolean — compact mode for carousel
+{%- endcomment -%}
+
+{%- assign r_author = review.author_name.value -%}
+{%- assign r_rating = review.rating.value -%}
+{%- assign r_title = review.title.value -%}
+{%- assign r_body = review.body.value -%}
+{%- assign r_date = review.review_date.value -%}
+{%- assign r_verified = review.verified_badge.value -%}
+{%- assign r_pinned = review.pinned.value -%}
+{%- assign r_product = review.product_reference.value -%}
+
+<article class="apee-review-card{% if compact %} apee-review-card--compact{% endif %}{% if r_pinned == true %} apee-review-card--pinned{% endif %}">
+
+  {%- if r_pinned == true -%}
+    <div class="apee-review-card__pin">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>
+      <span>Épinglé</span>
+    </div>
+  {%- endif -%}
+
+  <header class="apee-review-card__header">
+    <div class="apee-review-card__meta">
+      <span class="apee-review-card__author">{{ r_author }}</span>
+      {%- if r_verified == true -%}
+        <span class="apee-review-card__badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+          Achat vérifié
+        </span>
+      {%- endif -%}
+    </div>
+    <div class="apee-review-card__rating">
+      {%- render 'stars', rating: r_rating, size: 'small' -%}
+    </div>
+  </header>
+
+  {%- if r_title != blank -%}
+    <h4 class="apee-review-card__title">{{ r_title }}</h4>
+  {%- endif -%}
+
+  <div class="apee-review-card__body">
+    {{ r_body | newline_to_br }}
+  </div>
+
+  <footer class="apee-review-card__footer">
+    {%- if r_date != blank -%}
+      <time class="apee-review-card__date" datetime="{{ r_date }}">
+        {{ r_date | date: "%d/%m/%Y" }}
+      </time>
+    {%- endif -%}
+
+    {%- if show_product == true and r_product -%}
+      <span class="apee-review-card__product">
+        {{ r_product.title }}
+      </span>
+    {%- endif -%}
+  </footer>
+
+</article>
